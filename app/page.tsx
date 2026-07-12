@@ -31,10 +31,16 @@ function greeting() {
   return "Good evening";
 }
 
+function todayDateOnly() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
 export default async function Home() {
   const session = await auth();
+  const today = todayDateOnly();
 
-  const [topLevelTopics, recentNotes, recentProblems, recentResources] =
+  const [topLevelTopics, recentNotes, recentProblems, recentResources, todaysUpdates] =
     await Promise.all([
       prisma.topic.findMany({
         where: { parentId: null },
@@ -54,6 +60,11 @@ export default async function Home() {
         take: 5,
         orderBy: { createdAt: "desc" },
         include: { uploadedBy: true, topic: true },
+      }),
+      prisma.dailyUpdate.findMany({
+        where: { date: today },
+        orderBy: { createdAt: "desc" },
+        include: { author: true },
       }),
     ]);
 
@@ -130,6 +141,38 @@ export default async function Home() {
           );
         })}
       </div>
+
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">Today&apos;s Updates</h2>
+          <Link
+            href="/updates"
+            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            View all →
+          </Link>
+        </div>
+
+        {todaysUpdates.length > 0 ? (
+          <div className="space-y-3">
+            {todaysUpdates.map((update) => (
+              <div key={update.id} className="border rounded-lg p-4">
+                <p className="text-sm font-medium mb-1">{update.author.name}</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap line-clamp-3">
+                  {update.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-zinc-500 text-sm">
+            No one has posted today&apos;s update yet.{" "}
+            <Link href="/updates" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              Be the first
+            </Link>
+          </p>
+        )}
+      </section>
 
       <section>
         <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
