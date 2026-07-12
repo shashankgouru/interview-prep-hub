@@ -29,6 +29,7 @@ model User {
   problems Problem[]   // add this line
   notes    Note[]
   resources Resource[]
+  dailyUpdates  DailyUpdate[]
 }
 
 model Topic {
@@ -104,4 +105,17 @@ model Resource {
   uploadedBy   User   @relation(fields: [uploadedById], references: [id])
 
   createdAt DateTime @default(now())
+}
+model DailyUpdate {
+  id      String @id @default(cuid())
+  content String
+  date    DateTime @db.Date
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([authorId, date])
 }

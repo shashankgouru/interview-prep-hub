@@ -17,18 +17,32 @@ export function Navbar() {
   return (
     <header className="border-b bg-white dark:bg-black dark:border-zinc-800 sticky top-0 z-50">
       <div className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold tracking-tight">
-          Interview Prep Hub
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="font-semibold tracking-tight">
+            Interview Prep Hub
+          </Link>
+          <Link
+            href="/updates"
+            className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            Updates
+          </Link>
+          <Link
+            href="/topics"
+            className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            Knowledge Base
+          </Link>
+        </div>
 
         {status === "loading" ? null : session ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-full">
-            <Avatar>
+              <Avatar>
                 <AvatarFallback>
-                {session.user?.name?.[0]?.toUpperCase() ?? "U"}
+                  {session.user?.name?.[0]?.toUpperCase() ?? "U"}
                 </AvatarFallback>
-            </Avatar>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => signOut()}>
