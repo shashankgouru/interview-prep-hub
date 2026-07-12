@@ -27,6 +27,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   problems Problem[]   // add this line
+  notes    Note[]
+  resources Resource[]
 }
 
 model Topic {
@@ -38,6 +40,8 @@ model Topic {
   children Topic[] @relation("TopicToTopic")
 
   problems Problem[]   // add this line
+  notes    Note[]
+  resources Resource[]
 
   createdAt DateTime @default(now())
 }
@@ -60,6 +64,44 @@ model Problem {
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+}
+model Note {
+  id      String @id @default(cuid())
+  content String
+
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([topicId, authorId])
+}
+enum ResourceType {
+  PDF
+  IMAGE
+  CHEATSHEET
+  YOUTUBE
+  ARTICLE
+  GITHUB
+}
+
+model Resource {
+  id    String       @id @default(cuid())
+  title String
+  type  ResourceType
+  url   String
+
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
 
   createdAt DateTime @default(now())
 }

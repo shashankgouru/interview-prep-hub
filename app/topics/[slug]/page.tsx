@@ -1,7 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AddProblemForm } from "@/components/add-problem-form";
+import { ProblemsList } from "@/components/add-problem-form";
+import { NoteEditor } from "@/components/note-editor";
+import { AddResourceForm } from "@/components/add-resource-form";
+import { auth } from "@/lib/auth";
+
+function resourceTypeLabel(type: string) {
+  switch (type) {
+    case "PDF": return "PDF";
+    case "IMAGE": return "Image";
+    case "CHEATSHEET": return "Cheat Sheet";
+    case "YOUTUBE": return "YouTube";
+    case "ARTICLE": return "Article";
+    case "GITHUB": return "GitHub";
+    default: return type;
+  }
+}
 
 export default async function TopicPage({
   params,
@@ -9,6 +24,7 @@ export default async function TopicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const session = await auth();
 
   const topic = await prisma.topic.findUnique({
     where: { slug },
@@ -16,12 +32,17 @@ export default async function TopicPage({
       children: { orderBy: { name: "asc" } },
       parent: true,
       problems: { orderBy: { createdAt: "desc" } },
+      notes: { include: { author: true }, orderBy: { createdAt: "asc" } },
+      resources: { include: { uploadedBy: true }, orderBy: { createdAt: "desc" } },
     },
   });
 
   if (!topic) {
     notFound();
   }
+
+  const myNote = topic.notes.find((n) => n.authorId === session?.user?.id);
+  const othersNotes = topic.notes.filter((n) => n.authorId !== session?.user?.id);
 
   return (
     <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-12">
@@ -51,36 +72,70 @@ export default async function TopicPage({
           ))}
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
+          <section>
+            <h2 className="text-lg font-medium mb-3">Community Notes</h2>
+
+            {session?.user ? (
+              <div className="mb-6">
+                <p className="text-sm text-zinc-500 mb-2">Your notes</p>
+                <NoteEditor topicId={topic.id} initialContent={myNote?.content ?? ""} />
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-500 mb-6">
+                <Link href="/login" className="underline">Sign in</Link> to write your own notes.
+              </p>
+            )}
+
+            {othersNotes.length > 0 && (
+              <div className="space-y-4">
+                {othersNotes.map((note) => (
+                  <div key={note.id} className="border rounded-lg p-4">
+                    <p className="text-sm font-medium mb-2">{note.author.name}&apos;s Notes</p>
+                    <div className="text-sm whitespace-pre-wrap">{note.content}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section>
             <h2 className="text-lg font-medium mb-3">Problems</h2>
 
-            {topic.problems.length > 0 ? (
+            <ProblemsList
+              topicId={topic.id}
+              problems={topic.problems}
+              currentUserId={session?.user?.id}
+              isAdmin={session?.user?.role === "ADMIN"}
+            />
+          </section>
+
+          <section>
+            <h2 className="text-lg font-medium mb-3">Resources</h2>
+
+            {topic.resources.length > 0 ? (
               <ul className="space-y-2 mb-4">
-                {topic.problems.map((problem) => (
-                  <li
-                    key={problem.id}
-                    className="border rounded-lg p-3 flex items-center justify-between text-sm"
-                  >
+                {topic.resources.map((resource) => (
+                  <li key={resource.id}>
                     <a
-                      href={problem.link}
+                      href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium hover:underline"
+                      className="border rounded-lg p-3 flex items-center justify-between text-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
-                      {problem.title}
+                      <span className="font-medium">{resource.title}</span>
+                      <span className="text-zinc-500 text-xs border rounded-full px-2 py-0.5">
+                        {resourceTypeLabel(resource.type)}
+                      </span>
                     </a>
-                    <span className="text-zinc-500">
-                      {problem.platform} · {problem.difficulty}
-                    </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-zinc-500 text-sm mb-4">No problems added yet.</p>
+              <p className="text-zinc-500 text-sm mb-4">No resources added yet.</p>
             )}
 
-            <AddProblemForm topicId={topic.id} />
+            <AddResourceForm topicId={topic.id} />
           </section>
         </div>
       )}
