@@ -25,6 +25,8 @@ model User {
   role      Role     @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  problems Problem[]   // add this line
 }
 
 model Topic {
@@ -34,6 +36,30 @@ model Topic {
   parentId String?
   parent   Topic?  @relation("TopicToTopic", fields: [parentId], references: [id])
   children Topic[] @relation("TopicToTopic")
+
+  problems Problem[]   // add this line
+
+  createdAt DateTime @default(now())
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Problem {
+  id         String     @id @default(cuid())
+  title      String
+  platform   String
+  difficulty Difficulty
+  link       String
+
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id])
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
 
   createdAt DateTime @default(now())
 }

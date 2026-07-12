@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddProblemForm } from "@/components/add-problem-form";
 
 export default async function TopicPage({
   params,
@@ -14,6 +15,7 @@ export default async function TopicPage({
     include: {
       children: { orderBy: { name: "asc" } },
       parent: true,
+      problems: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -49,9 +51,38 @@ export default async function TopicPage({
           ))}
         </div>
       ) : (
-        <p className="text-zinc-500">
-          This is a leaf topic — notes, resources, and problems will go here in a later phase.
-        </p>
+        <div className="space-y-6">
+          <section>
+            <h2 className="text-lg font-medium mb-3">Problems</h2>
+
+            {topic.problems.length > 0 ? (
+              <ul className="space-y-2 mb-4">
+                {topic.problems.map((problem) => (
+                  <li
+                    key={problem.id}
+                    className="border rounded-lg p-3 flex items-center justify-between text-sm"
+                  >
+                    <a
+                      href={problem.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:underline"
+                    >
+                      {problem.title}
+                    </a>
+                    <span className="text-zinc-500">
+                      {problem.platform} · {problem.difficulty}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-zinc-500 text-sm mb-4">No problems added yet.</p>
+            )}
+
+            <AddProblemForm topicId={topic.id} />
+          </section>
+        </div>
       )}
     </main>
   );
