@@ -3,20 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProblemsList } from "@/components/add-problem-form";
 import { NoteEditor } from "@/components/note-editor";
-import { AddResourceForm } from "@/components/add-resource-form";
+import { AddResourceForm, ResourcesList } from "@/components/add-resource-form";
 import { auth } from "@/lib/auth";
-
-function resourceTypeLabel(type: string) {
-  switch (type) {
-    case "PDF": return "PDF";
-    case "IMAGE": return "Image";
-    case "CHEATSHEET": return "Cheat Sheet";
-    case "YOUTUBE": return "YouTube";
-    case "ARTICLE": return "Article";
-    case "GITHUB": return "GitHub";
-    default: return type;
-  }
-}
 
 async function getRootCategoryName(topicId: string): Promise<string> {
   let current = await prisma.topic.findUnique({ where: { id: topicId } });
@@ -56,36 +44,40 @@ export default async function TopicPage({
   const othersNotes = topic.notes.filter((n) => n.authorId !== session?.user?.id);
 
   return (
-    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-12">
+    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-14">
       {topic.parent && (
         <Link
           href={`/topics/${topic.parent.slug}`}
-          className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+          className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
         >
           ← {topic.parent.name}
         </Link>
       )}
 
-      <h1 className="text-2xl font-semibold tracking-tight mt-2 mb-6">
+      <h1 className="text-2xl font-semibold tracking-tight mt-2 mb-8">
         {topic.name}
       </h1>
 
       {topic.children.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {topic.children.map((child) => (
             <Link
               key={child.id}
               href={`/topics/${child.slug}`}
-              className="border rounded-lg p-4 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+              className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md transition-shadow duration-150"
             >
-              <span className="font-medium">{child.name}</span>
+              <span className="font-medium text-sm text-zinc-800 dark:text-zinc-200">
+                {child.name}
+              </span>
             </Link>
           ))}
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           <section>
-            <h2 className="text-lg font-medium mb-3">Community Notes</h2>
+            <h2 className="text-sm font-semibold tracking-wide uppercase text-zinc-400 mb-4">
+              Community Notes
+            </h2>
 
             {session?.user ? (
               <div className="mb-6">
@@ -94,16 +86,23 @@ export default async function TopicPage({
               </div>
             ) : (
               <p className="text-sm text-zinc-500 mb-6">
-                <Link href="/login" className="underline">Sign in</Link> to write your own notes.
+                <Link href="/login" className="underline underline-offset-2">Sign in</Link> to write your own notes.
               </p>
             )}
 
             {othersNotes.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {othersNotes.map((note) => (
-                  <div key={note.id} className="border rounded-lg p-4">
-                    <p className="text-sm font-medium mb-2">{note.author.name}&apos;s Notes</p>
-                    <div className="text-sm whitespace-pre-wrap">{note.content}</div>
+                  <div
+                    key={note.id}
+                    className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-950"
+                  >
+                    <p className="text-sm font-medium mb-2 text-zinc-800 dark:text-zinc-200">
+                      {note.author.name}&apos;s Notes
+                    </p>
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                      {note.content}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -112,7 +111,9 @@ export default async function TopicPage({
 
           {isDSA && (
             <section>
-              <h2 className="text-lg font-medium mb-3">Problems</h2>
+              <h2 className="text-sm font-semibold tracking-wide uppercase text-zinc-400 mb-4">
+                Problems
+              </h2>
 
               <ProblemsList
                 topicId={topic.id}
@@ -124,29 +125,15 @@ export default async function TopicPage({
           )}
 
           <section>
-            <h2 className="text-lg font-medium mb-3">Resources</h2>
+            <h2 className="text-sm font-semibold tracking-wide uppercase text-zinc-400 mb-4">
+              Resources
+            </h2>
 
-            {topic.resources.length > 0 ? (
-              <ul className="space-y-2 mb-4">
-                {topic.resources.map((resource) => (
-                  <li key={resource.id}>
-                    <a
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="border rounded-lg p-3 flex items-center justify-between text-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
-                    >
-                      <span className="font-medium">{resource.title}</span>
-                      <span className="text-zinc-500 text-xs border rounded-full px-2 py-0.5">
-                        {resourceTypeLabel(resource.type)}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-zinc-500 text-sm mb-4">No resources added yet.</p>
-            )}
+            <ResourcesList
+              resources={topic.resources}
+              currentUserId={session?.user?.id}
+              isAdmin={session?.user?.role === "ADMIN"}
+            />
 
             <AddResourceForm topicId={topic.id} />
           </section>

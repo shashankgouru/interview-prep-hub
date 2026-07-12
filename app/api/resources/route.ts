@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, type, url, topicId } = await req.json();
+  const { title, type, url, topicId, fileKey } = await req.json();
 
   if (!title || !type || !url || !topicId) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       title,
       type,
       url,
+      fileKey,
       topicId,
       uploadedById: session.user.id,
     },

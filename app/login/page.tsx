@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
@@ -32,30 +33,42 @@ export default function LoginPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center px-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold">Sign in</h1>
+      <div className="w-full max-w-sm border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm p-6 bg-white dark:bg-zinc-950">
+        <h1 className="text-xl font-semibold tracking-tight mb-6">Sign in</h1>
 
-        <input
-          className="w-full border rounded-md px-3 py-2 text-sm"
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="w-full border rounded-md px-3 py-2 text-sm"
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-sm bg-white dark:bg-zinc-950"
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            className="w-full border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-sm bg-white dark:bg-zinc-950"
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <Button type="submit" className="w-full">
-          Sign in
-        </Button>
-      </form>
+          <Button type="submit" className="w-full">
+            Sign in
+          </Button>
+        </form>
+
+        <p className="text-sm text-zinc-500 mt-4 text-center">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/register"
+            className="underline underline-offset-2 text-zinc-900 dark:text-zinc-100"
+          >
+            Sign up
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

@@ -93,10 +93,11 @@ enum ResourceType {
 }
 
 model Resource {
-  id    String       @id @default(cuid())
-  title String
-  type  ResourceType
-  url   String
+  id      String       @id @default(cuid())
+  title   String
+  type    ResourceType
+  url     String
+  fileKey String?
 
   topicId String
   topic   Topic  @relation(fields: [topicId], references: [id])
