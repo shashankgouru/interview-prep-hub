@@ -18,6 +18,14 @@ function resourceTypeLabel(type: string) {
   }
 }
 
+async function getRootCategoryName(topicId: string): Promise<string> {
+  let current = await prisma.topic.findUnique({ where: { id: topicId } });
+  while (current?.parentId) {
+    current = await prisma.topic.findUnique({ where: { id: current.parentId } });
+  }
+  return current?.name ?? "";
+}
+
 export default async function TopicPage({
   params,
 }: {
@@ -40,6 +48,9 @@ export default async function TopicPage({
   if (!topic) {
     notFound();
   }
+
+  const rootCategory = await getRootCategoryName(topic.id);
+  const isDSA = rootCategory === "DSA";
 
   const myNote = topic.notes.find((n) => n.authorId === session?.user?.id);
   const othersNotes = topic.notes.filter((n) => n.authorId !== session?.user?.id);
@@ -99,16 +110,18 @@ export default async function TopicPage({
             )}
           </section>
 
-          <section>
-            <h2 className="text-lg font-medium mb-3">Problems</h2>
+          {isDSA && (
+            <section>
+              <h2 className="text-lg font-medium mb-3">Problems</h2>
 
-            <ProblemsList
-              topicId={topic.id}
-              problems={topic.problems}
-              currentUserId={session?.user?.id}
-              isAdmin={session?.user?.role === "ADMIN"}
-            />
-          </section>
+              <ProblemsList
+                topicId={topic.id}
+                problems={topic.problems}
+                currentUserId={session?.user?.id}
+                isAdmin={session?.user?.role === "ADMIN"}
+              />
+            </section>
+          )}
 
           <section>
             <h2 className="text-lg font-medium mb-3">Resources</h2>

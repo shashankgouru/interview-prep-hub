@@ -117,48 +117,57 @@ export default async function Home() {
   };
 
   return (
-    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-12">
+    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-14">
       <h1 className="text-3xl font-semibold tracking-tight">
         {greeting()}
-        {session?.user?.name ? `, ${session.user.name}` : ""} 👋
+        {session?.user?.name ? `, ${session.user.name}` : ""}
       </h1>
-      <p className="text-zinc-500 mt-1 mb-10">
+      <p className="text-zinc-500 mt-1.5 mb-12">
         Here&apos;s what the group has been working on.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-14">
         {topLevelTopics.map((topic) => {
           const Icon = topicIcon(topic.name);
           return (
             <Link
               key={topic.id}
               href={`/topics/${topic.slug}`}
-              className="border rounded-xl p-4 flex flex-col gap-3 hover:border-indigo-300 hover:shadow-sm transition-all dark:hover:border-indigo-800"
+              className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col gap-3 bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md transition-shadow duration-150"
             >
-              <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <span className="font-medium text-sm">{topic.name}</span>
+              <Icon className="w-4.5 h-4.5 text-zinc-500 dark:text-zinc-400" />
+              <span className="font-medium text-sm text-zinc-800 dark:text-zinc-200">
+                {topic.name}
+              </span>
             </Link>
           );
         })}
       </div>
 
-      <section className="mb-12">
+      <section className="mb-14">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">Today&apos;s Updates</h2>
+          <h2 className="text-sm font-semibold tracking-wide uppercase text-zinc-400">
+            Today&apos;s Updates
+          </h2>
           <Link
             href="/updates"
-            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
-            View all →
+            View all
           </Link>
         </div>
 
         {todaysUpdates.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {todaysUpdates.map((update) => (
-              <div key={update.id} className="border rounded-lg p-4">
-                <p className="text-sm font-medium mb-1">{update.author.name}</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap line-clamp-3">
+              <div
+                key={update.id}
+                className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-950"
+              >
+                <p className="text-sm font-medium mb-1 text-zinc-800 dark:text-zinc-200">
+                  {update.author.name}
+                </p>
+                <p className="text-sm text-zinc-500 whitespace-pre-wrap line-clamp-3">
                   {update.content}
                 </p>
               </div>
@@ -167,7 +176,7 @@ export default async function Home() {
         ) : (
           <p className="text-zinc-500 text-sm">
             No one has posted today&apos;s update yet.{" "}
-            <Link href="/updates" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+            <Link href="/updates" className="underline underline-offset-2">
               Be the first
             </Link>
           </p>
@@ -175,7 +184,9 @@ export default async function Home() {
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
+        <h2 className="text-sm font-semibold tracking-wide uppercase text-zinc-400 mb-4">
+          Recent Activity
+        </h2>
 
         {feed.length > 0 ? (
           <div className="space-y-2">
@@ -185,12 +196,14 @@ export default async function Home() {
                 <Link
                   key={`${item.type}-${item.id}`}
                   href={`/topics/${item.topicSlug}`}
-                  className="flex items-center gap-3 border rounded-lg p-3 text-sm hover:border-indigo-300 dark:hover:border-indigo-800 transition-colors"
+                  className="flex items-center gap-3 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 text-sm bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors duration-150"
                 >
                   <Icon className="w-4 h-4 text-zinc-400 shrink-0" />
-                  <span className="truncate">
-                    <span className="font-medium">{item.actor}</span>{" "}
-                    <span className="text-zinc-500">{item.label}</span>{" "}
+                  <span className="truncate text-zinc-600 dark:text-zinc-400">
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                      {item.actor}
+                    </span>{" "}
+                    {item.label}{" "}
                     <span className="text-zinc-400">in {item.topicName}</span>
                   </span>
                 </Link>
