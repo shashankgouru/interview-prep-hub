@@ -15,7 +15,7 @@ export function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <header className="border-b bg-white dark:bg-black dark:border-zinc-800 sticky top-0 z-50">
+    <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-black/90 backdrop-blur-sm sticky top-0 z-50">
       <div className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="font-semibold tracking-tight">
@@ -33,6 +33,14 @@ export function Navbar() {
           >
             Knowledge Base
           </Link>
+          {session?.user?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         {status === "loading" ? null : session ? (

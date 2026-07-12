@@ -1,19 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { DailyUpdateForm } from "@/components/daily-update-form";
+import { DailyUpdatesList } from "@/components/daily-updates-list";
 
 function todayDateOnly() {
   const now = new Date();
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-}
-
-function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
 }
 
 export default async function UpdatesPage() {
@@ -48,24 +40,12 @@ export default async function UpdatesPage() {
         <p className="text-sm text-zinc-500 mb-12">Sign in to post your update.</p>
       )}
 
-      <section className="space-y-3">
-        {allUpdates.map((update) => (
-          <div
-            key={update.id}
-            className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-950"
-          >
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="font-medium text-sm text-zinc-800 dark:text-zinc-200">
-                {update.author.name}
-              </span>
-              <span className="text-xs text-zinc-400">{formatDate(update.date)}</span>
-            </div>
-            <div className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
-              {update.content}
-            </div>
-          </div>
-        ))}
-      </section>
+      <DailyUpdatesList
+        updates={allUpdates}
+        currentUserId={session?.user?.id}
+        isAdmin={session?.user?.role === "ADMIN"}
+        todayTime={today.getTime()}
+      />
     </main>
   );
 }
