@@ -28,7 +28,7 @@ export default async function UpdatesPage() {
   ]);
 
   return (
-    <main className="flex-1 mx-auto max-w-3xl w-full px-6 py-14">
+    <main className="flex-1 mx-auto max-w-3xl w-full px-6 sm:px-10 py-14">
       <h1 className="text-2xl font-semibold tracking-tight mb-8">Daily Updates</h1>
 
       {session?.user ? (

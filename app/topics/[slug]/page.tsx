@@ -47,7 +47,7 @@ export default async function TopicPage({
     : [[], []];
 
   return (
-    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-14">
+    <main className="flex-1 w-full py-14">
       {topic.parent && (
         <Link
           href={`/topics/${topic.parent.slug}`}

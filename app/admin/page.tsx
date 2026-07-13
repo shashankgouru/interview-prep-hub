@@ -16,7 +16,7 @@ export default async function AdminPage() {
   });
 
   return (
-    <main className="flex-1 mx-auto max-w-3xl w-full px-6 py-14">
+    <main className="flex-1 mx-auto max-w-3xl w-full px-6 sm:px-10 py-14">
       <h1 className="text-2xl font-semibold tracking-tight mb-8">Manage Members</h1>
       <AdminMembersList users={users} currentUserId={session.user.id} />
     </main>

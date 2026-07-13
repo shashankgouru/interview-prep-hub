@@ -8,7 +8,7 @@ export default async function TopicsPage() {
   });
 
   return (
-    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-12">
+    <main className="flex-1 w-full py-14">
       <h1 className="text-2xl font-semibold tracking-tight mb-6">Knowledge Base</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {topLevelTopics.map((topic) => (

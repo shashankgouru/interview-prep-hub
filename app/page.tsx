@@ -117,7 +117,7 @@ export default async function Home() {
   };
 
   return (
-    <main className="flex-1 mx-auto max-w-5xl w-full px-6 py-14">
+    <main className="flex-1 mx-auto max-w-8xl w-full px-6 sm:px-10 py-14">
       <h1 className="text-3xl font-semibold tracking-tight">
         {greeting()}
         {session?.user?.name ? `, ${session.user.name}` : ""}
