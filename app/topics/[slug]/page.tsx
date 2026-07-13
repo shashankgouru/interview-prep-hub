@@ -4,14 +4,6 @@ import { notFound } from "next/navigation";
 import { TopicTabs } from "@/components/topic-tabs";
 import { auth } from "@/lib/auth";
 
-async function getRootCategoryName(topicId: string): Promise<string> {
-  let current = await prisma.topic.findUnique({ where: { id: topicId } });
-  while (current?.parentId) {
-    current = await prisma.topic.findUnique({ where: { id: current.parentId } });
-  }
-  return current?.name ?? "";
-}
-
 export default async function TopicPage({
   params,
 }: {
@@ -25,7 +17,7 @@ export default async function TopicPage({
     where: { slug },
     include: {
       children: { orderBy: { name: "asc" } },
-      parent: true,
+      parent: { include: { parent: true } },
       notes: { include: { author: true }, orderBy: { createdAt: "asc" } },
     },
   });
@@ -34,7 +26,7 @@ export default async function TopicPage({
     notFound();
   }
 
-  const rootCategory = await getRootCategoryName(topic.id);
+  const rootCategory = topic.parent?.parent?.name ?? topic.parent?.name ?? topic.name;
   const isDSA = rootCategory === "DSA";
   const isAdmin = session?.user?.role === "ADMIN";
 
