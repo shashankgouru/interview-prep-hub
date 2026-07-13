@@ -27,34 +27,28 @@ export function AdminMembersList({
     password: string;
   } | null>(null);
 
-  async function toggleRole(id: string, currentRole: string) {
-    const newRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
+  async function changeRole(id: string, role: string) {
     setLoadingId(id);
-
     await fetch(`/api/admin/users/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: newRole }),
+      body: JSON.stringify({ role }),
     });
-
     setLoadingId(null);
     router.refresh();
   }
 
   async function submitReset(id: string) {
     setLoadingId(id);
-
     const res = await fetch(`/api/admin/users/${id}/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ newPassword: customPassword || undefined }),
     });
     const data = await res.json();
-
     setLoadingId(null);
     setResetOpenId(null);
     setCustomPassword("");
-
     if (data.tempPassword) {
       setRevealedPassword({ userId: id, password: data.tempPassword });
     }
@@ -67,7 +61,7 @@ export function AdminMembersList({
           key={user.id}
           className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-950"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
                 {user.name}
@@ -79,33 +73,32 @@ export function AdminMembersList({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs border border-zinc-200 dark:border-zinc-800 rounded-full px-2 py-0.5 text-zinc-500">
-                {user.role}
-              </span>
+              {user.id !== currentUserId ? (
+                <select
+                  value={user.role}
+                  disabled={loadingId === user.id}
+                  onChange={(e) => changeRole(user.id, e.target.value)}
+                  className="text-xs border border-zinc-200 dark:border-zinc-800 rounded-full px-2 py-1 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="RESTRICTED">Restricted</option>
+                </select>
+              ) : (
+                <span className="text-xs border border-zinc-200 dark:border-zinc-800 rounded-full px-2 py-0.5 text-zinc-500">
+                  {user.role}
+                </span>
+              )}
               {user.id !== currentUserId && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setResetOpenId(resetOpenId === user.id ? null : user.id)
-                    }
-                    className="text-xs underline underline-offset-2 text-zinc-600 dark:text-zinc-400"
-                  >
-                    Reset Password
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleRole(user.id, user.role)}
-                    disabled={loadingId === user.id}
-                    className="text-xs underline underline-offset-2 text-zinc-600 dark:text-zinc-400 disabled:opacity-50"
-                  >
-                    {loadingId === user.id
-                      ? "Updating..."
-                      : user.role === "ADMIN"
-                      ? "Make Member"
-                      : "Make Admin"}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setResetOpenId(resetOpenId === user.id ? null : user.id)
+                  }
+                  className="text-xs underline underline-offset-2 text-zinc-600 dark:text-zinc-400"
+                >
+                  Reset Password
+                </button>
               )}
             </div>
           </div>

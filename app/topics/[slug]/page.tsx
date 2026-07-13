@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TopicTabs } from "@/components/topic-tabs";
 import { auth } from "@/lib/auth";
+import { canViewAuthor } from "@/lib/visibility";
 
 export default async function TopicPage({
   params,
@@ -30,8 +31,11 @@ export default async function TopicPage({
   const isDSA = rootCategory === "DSA";
   const isAdmin = session?.user?.role === "ADMIN";
 
+  const viewerRole = session?.user?.role;
   const myNote = topic.notes.find((n) => n.authorId === userId);
-  const othersNotes = topic.notes.filter((n) => n.authorId !== userId);
+  const othersNotes = topic.notes.filter(
+    (n) => n.authorId !== userId && canViewAuthor(viewerRole, userId, n.author.role, n.authorId)
+  );
 
   const [myProblems, myResources] = userId
     ? await Promise.all([

@@ -21,7 +21,7 @@ export async function PATCH(
   }
 
   const { role } = await req.json();
-  if (role !== "ADMIN" && role !== "MEMBER") {
+  if (!["ADMIN", "MEMBER", "RESTRICTED"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 

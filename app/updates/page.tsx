@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { DailyUpdateForm } from "@/components/daily-update-form";
 import { DailyUpdatesList } from "@/components/daily-updates-list";
+import { canViewAuthor } from "@/lib/visibility";
 
 function todayDateOnly() {
   const now = new Date();
@@ -27,6 +28,10 @@ export default async function UpdatesPage() {
     }),
   ]);
 
+  const visibleUpdates = allUpdates.filter((u) =>
+    canViewAuthor(session?.user?.role, session?.user?.id, u.author.role, u.authorId)
+  );
+
   return (
     <main className="flex-1 mx-auto max-w-3xl w-full px-6 sm:px-10 py-14">
       <h1 className="text-2xl font-semibold tracking-tight mb-8">Daily Updates</h1>
@@ -41,7 +46,7 @@ export default async function UpdatesPage() {
       )}
 
       <DailyUpdatesList
-        updates={allUpdates}
+        updates={visibleUpdates}
         currentUserId={session?.user?.id}
         isAdmin={session?.user?.role === "ADMIN"}
         todayTime={today.getTime()}

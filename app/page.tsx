@@ -12,6 +12,7 @@ import {
   ListChecks,
   Paperclip,
 } from "lucide-react";
+import { canViewAuthor } from "@/lib/visibility";
 
 function topicIcon(name: string) {
   switch (name) {
@@ -39,6 +40,8 @@ function todayDateOnly() {
 export default async function Home() {
   const session = await auth();
   const today = todayDateOnly();
+  const viewerRole = session?.user?.role;
+  const viewerId = session?.user?.id;
 
   const [topLevelTopics, recentNotes, recentProblems, recentResources, todaysUpdates] =
     await Promise.all([
@@ -47,17 +50,17 @@ export default async function Home() {
         orderBy: { name: "asc" },
       }),
       prisma.note.findMany({
-        take: 5,
+        take: 20,
         orderBy: { updatedAt: "desc" },
         include: { author: true, topic: true },
       }),
       prisma.problem.findMany({
-        take: 5,
+        take: 20,
         orderBy: { createdAt: "desc" },
         include: { createdBy: true, topic: true },
       }),
       prisma.resource.findMany({
-        take: 5,
+        take: 20,
         orderBy: { createdAt: "desc" },
         include: { uploadedBy: true, topic: true },
       }),
@@ -79,36 +82,46 @@ export default async function Home() {
   };
 
   const feed: FeedItem[] = [
-    ...recentNotes.map((n) => ({
-      id: n.id,
-      type: "note" as const,
-      actor: n.author.name,
-      label: "updated their notes",
-      topicName: n.topic.name,
-      topicSlug: n.topic.slug,
-      date: n.updatedAt,
-    })),
-    ...recentProblems.map((p) => ({
-      id: p.id,
-      type: "problem" as const,
-      actor: p.createdBy.name,
-      label: `added "${p.title}"`,
-      topicName: p.topic.name,
-      topicSlug: p.topic.slug,
-      date: p.createdAt,
-    })),
-    ...recentResources.map((r) => ({
-      id: r.id,
-      type: "resource" as const,
-      actor: r.uploadedBy.name,
-      label: `shared "${r.title}"`,
-      topicName: r.topic.name,
-      topicSlug: r.topic.slug,
-      date: r.createdAt,
-    })),
+    ...recentNotes
+      .filter((n) => canViewAuthor(viewerRole, viewerId, n.author.role, n.authorId))
+      .map((n) => ({
+        id: n.id,
+        type: "note" as const,
+        actor: n.author.name,
+        label: "updated their notes",
+        topicName: n.topic.name,
+        topicSlug: n.topic.slug,
+        date: n.updatedAt,
+      })),
+    ...recentProblems
+      .filter((p) => canViewAuthor(viewerRole, viewerId, p.createdBy.role, p.createdById))
+      .map((p) => ({
+        id: p.id,
+        type: "problem" as const,
+        actor: p.createdBy.name,
+        label: `added "${p.title}"`,
+        topicName: p.topic.name,
+        topicSlug: p.topic.slug,
+        date: p.createdAt,
+      })),
+    ...recentResources
+      .filter((r) => canViewAuthor(viewerRole, viewerId, r.uploadedBy.role, r.uploadedById))
+      .map((r) => ({
+        id: r.id,
+        type: "resource" as const,
+        actor: r.uploadedBy.name,
+        label: `shared "${r.title}"`,
+        topicName: r.topic.name,
+        topicSlug: r.topic.slug,
+        date: r.createdAt,
+      })),
   ]
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 8);
+
+  const visibleTodaysUpdates = todaysUpdates.filter((u) =>
+    canViewAuthor(viewerRole, viewerId, u.author.role, u.authorId)
+  );
 
   const feedIcon = {
     note: StickyNote,
@@ -157,9 +170,9 @@ export default async function Home() {
           </Link>
         </div>
 
-        {todaysUpdates.length > 0 ? (
+        {visibleTodaysUpdates.length > 0 ? (
           <div className="space-y-2">
-            {todaysUpdates.map((update) => (
+            {visibleTodaysUpdates.map((update) => (
               <div
                 key={update.id}
                 className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-950"
